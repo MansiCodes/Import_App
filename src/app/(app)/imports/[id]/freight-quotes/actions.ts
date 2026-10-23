@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { z } from 'zod'
-import { generateQuoteToken } from '@/lib/freight-token'
+import { generateQuoteToken, quotePortalUrl } from '@/lib/freight-token'
+import { pairNamedPhones } from '@/lib/quote-links'
 import { formatDate } from '@/lib/utils'
 import { sendQuoteLink } from '@/lib/comms/outbound'
 import { rateLimit } from '@/lib/rate-limit'
@@ -672,7 +673,8 @@ const combinedSchema = z.object({
   response_deadline: z.union([z.string(), z.null()]).transform((v) => (v === '' ? null : v)),
   request_notes: z.string().trim().max(2000).nullable(),
   cha_ids: z.array(z.string().uuid()),
-  extra_names: z.array(z.string().trim().min(1).max(200)),
+  extra_names: z.array(z.string()),
+  extra_phones: z.array(z.string()),
 })
 
 /**
@@ -706,19 +708,21 @@ export async function createRequestWithRecipients(
     response_deadline: emptyToNull(formData.get('response_deadline')),
     request_notes: emptyToNull(formData.get('request_notes')),
     cha_ids: formData.getAll('cha_ids').filter((v) => typeof v === 'string' && v !== ''),
-    extra_names: formData
-      .getAll('extra_names')
-      .map((v) => String(v).trim())
-      .filter((v) => v !== ''),
+    extra_names: formData.getAll('extra_names').map((v) => String(v)),
+    extra_phones: formData.getAll('extra_phones').map((v) => String(v)),
   })
 
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  const { import_id, cha_ids, extra_names, ...facts } = parsed.data
+  const { import_id, cha_ids, extra_names, extra_phones, ...facts } = parsed.data
+  const extras = pairNamedPhones(
+    extra_names.map((name) => name.trim()),
+    extra_phones,
+  ).filter((extra) => extra.name.length > 0 && extra.name.length <= 200)
 
-  if (cha_ids.length === 0 && extra_names.length === 0) {
+  if (cha_ids.length === 0 && extras.length === 0) {
     return { ok: false, error: 'Choose at least one company to request a quote from.' }
   }
 
@@ -745,20 +749,25 @@ export async function createRequestWithRecipients(
 
   if (error) return { ok: false, error: error.message }
 
-  // Names are read from the CHA master at this moment and stored on the
-  // recipient, so renaming a CHA later cannot rewrite what was sent.
-  const { data: chas } = await supabase.from('chas').select('id, name').in('id', cha_ids)
+  // Names and numbers are read from the CHA master at this moment and stored on
+  // the recipient, so renaming a CHA later cannot rewrite what was sent.
+  const { data: chas } =
+    cha_ids.length > 0
+      ? await supabase.from('chas').select('id, name, phone, whatsapp_phone').in('id', cha_ids)
+      : { data: [] as Array<{ id: string; name: string; phone: string | null; whatsapp_phone: string | null }> }
 
   const recipients = [
     ...(chas ?? []).map((cha) => ({
       quote_request_id: created.id,
       cha_id: cha.id,
       recipient_name: cha.name,
+      phone: cha.whatsapp_phone || cha.phone || null,
       token: generateQuoteToken(),
     })),
-    ...extra_names.map((name) => ({
+    ...extras.map(({ name, phone }) => ({
       quote_request_id: created.id,
       recipient_name: name,
+      phone,
       token: generateQuoteToken(),
     })),
   ]
@@ -844,7 +853,7 @@ async function quoteLinkContext(recipientId: string, origin: string) {
       : '',
     packages: request?.package_count ? String(request.package_count) : '',
     incoterm: String(request?.incoterm ?? ''),
-    quoteLink: `${origin.replace(/\/$/, '')}/q/${data.token}`,
+    quoteLink: quotePortalUrl(data.token, origin),
     deadlineLine: deadline ? `Please submit by ${formatDate(deadline)}.` : '',
   }
 }

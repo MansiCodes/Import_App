@@ -15,23 +15,38 @@ function initials(name: string | null, email: string): string {
 export function TopBar({
   profile,
   notifications,
+  menuOpen = false,
   onMenuToggle,
+  onMobileMenu,
 }: {
   profile: Profile
   notifications: NotificationItem[]
+  menuOpen?: boolean
   onMenuToggle?: () => void
+  onMobileMenu?: () => void
 }) {
   const name = profile.full_name?.trim() || profile.email.split('@')[0] || 'User'
   const role = ROLE_LABELS[profile.role]
 
   return (
     <header className="z-20 flex shrink-0 items-center gap-3 border-b bg-surface-raised px-4 py-3 sm:gap-4 sm:px-6">
+      {onMobileMenu && (
+        <button
+          type="button"
+          onClick={onMobileMenu}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-muted transition hover:bg-surface-sunken hover:text-ink md:hidden"
+        >
+          <Menu size={18} strokeWidth={1.75} aria-hidden />
+        </button>
+      )}
       {onMenuToggle && (
         <button
           type="button"
           onClick={onMenuToggle}
           aria-label="Toggle sidebar"
-          className="hidden h-9 w-9 items-center justify-center rounded-lg text-ink-muted transition hover:bg-surface-sunken hover:text-ink md:flex"
+          className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-muted transition hover:bg-surface-sunken hover:text-ink md:flex"
         >
           <Menu size={18} strokeWidth={1.75} aria-hidden />
         </button>

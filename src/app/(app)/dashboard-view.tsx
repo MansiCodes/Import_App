@@ -257,7 +257,7 @@ export function DashboardView({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiCard
           label="Active Imports"
           value={activeCount}
@@ -296,36 +296,32 @@ export function DashboardView({
       </div>
 
       {activeCount > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {stageCounts.map((s) => {
             const pct = Math.round((s.count / stageTotal) * 100)
             const Icon = s.icon
             return (
               <div
                 key={s.id}
-                className="rounded-2xl border bg-surface-raised px-4 py-3.5 shadow-sm"
+                className="min-w-0 rounded-2xl border bg-surface-raised px-3 py-3 shadow-sm"
               >
-                <div className="flex items-center gap-3">
+                <p className="truncate text-sm font-medium text-ink-muted">{s.label}</p>
+                <div className="mt-2 flex items-center gap-2.5">
                   <span
                     className={cn(
-                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+                      'flex size-9 shrink-0 items-center justify-center rounded-xl',
                       s.iconWrap,
                     )}
                   >
                     <Icon size={16} strokeWidth={1.75} aria-hidden />
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-ink-muted">{s.label}</p>
-                      <p className="text-xl font-semibold tnum text-ink">{s.count}</p>
-                    </div>
-                    <div className={cn('mt-2.5 h-1.5 overflow-hidden rounded-full', s.track)}>
-                      <div
-                        className={cn('h-full rounded-full transition-all', s.bar)}
-                        style={{ width: `${Math.max(pct, s.count > 0 ? 8 : 0)}%` }}
-                      />
-                    </div>
-                  </div>
+                  <p className="text-2xl font-semibold tnum text-ink">{s.count}</p>
+                </div>
+                <div className={cn('mt-2 h-1.5 overflow-hidden rounded-full', s.track)}>
+                  <div
+                    className={cn('h-full rounded-full transition-all', s.bar)}
+                    style={{ width: `${Math.max(pct, s.count > 0 ? 8 : 0)}%` }}
+                  />
                 </div>
               </div>
             )
@@ -649,22 +645,24 @@ function KpiCard({
 
   const body = (
     <>
-      <span
-        className={cn(
-          'flex h-11 w-11 items-center justify-center rounded-2xl',
-          icons[visualTone],
-        )}
-      >
-        <Icon size={20} strokeWidth={1.75} aria-hidden />
-      </span>
-      <p className="mt-3.5 text-sm font-medium text-ink-muted">{label}</p>
-      <p className="mt-0.5 text-3xl font-semibold tracking-tight tnum text-ink">{value}</p>
-      <p className="mt-1 text-xs text-ink-faint">{hint}</p>
+      <p className="truncate text-sm font-medium text-ink-muted">{label}</p>
+      <div className="mt-2 flex items-center gap-2.5">
+        <span
+          className={cn(
+            'flex size-9 shrink-0 items-center justify-center rounded-xl',
+            icons[visualTone],
+          )}
+        >
+          <Icon size={16} strokeWidth={1.75} aria-hidden />
+        </span>
+        <p className="text-2xl font-semibold tracking-tight tnum text-ink">{value}</p>
+      </div>
+      <p className="mt-1 text-xs leading-snug text-ink-faint">{hint}</p>
     </>
   )
 
   const className = cn(
-    'rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+    'min-w-0 rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
     shells[visualTone],
     active && `ring-2 ${rings[tone]}`,
   )

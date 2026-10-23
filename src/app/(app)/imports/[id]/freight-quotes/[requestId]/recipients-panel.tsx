@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react'
 import { Button, Card, CardHeader, CardTitle, Input } from '@/components/ui'
 import { renderTemplate } from '@/lib/email-template'
+import { whatsappChatUrl } from '@/lib/quote-links'
 import type { FreightQuoteRecipient, FreightQuoteRequestSummary } from '@/lib/types'
 import { formatDate } from '@/lib/utils'
 import { RecipientChip } from '../freight-ui'
@@ -18,6 +19,8 @@ import {
 
 export interface RecipientSendState {
   destinationMasked: string | null
+  /** E.164 digits for wa.me. Null when we have no number for this recipient. */
+  waDigits: string | null
   status: string | null
   sentAt: string | null
   deliveredAt: string | null
@@ -106,6 +109,11 @@ function AddRecipient({
       <label className="block">
         <span className="mb-1 block text-ink-muted">Company name</span>
         <Input name="recipient_name" required autoFocus className="w-56" />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-ink-muted">WhatsApp number</span>
+        <Input name="phone" className="w-44" placeholder="98765 43210" />
       </label>
 
       <Button type="submit" variant="primary" disabled={pending}>
@@ -319,6 +327,24 @@ function RowActions({
           <Button onClick={() => copy(`link-${recipient.id}`, link)}>
             {copied === `link-${recipient.id}` ? 'Copied' : 'Copy link'}
           </Button>
+          {sendState?.waDigits && (
+            <a
+              href={whatsappChatUrl(sendState.waDigits, message)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition hover:bg-surface-sunken"
+              onClick={() => {
+                if (recipient.status === 'Pending') {
+                  const data = new FormData()
+                  data.set('id', recipient.id)
+                  data.set('import_id', importId)
+                  sentAction(data)
+                }
+              }}
+            >
+              Open WhatsApp
+            </a>
+          )}
           <Button
             variant={canSendHere ? undefined : 'primary'}
             onClick={() => {
@@ -434,8 +460,8 @@ export function RecipientsPanel({
           <CardTitle>Recipients</CardTitle>
           <p className="text-ink-muted">
             {sendingAvailable
-              ? 'Each company gets its own link. Send it from here, or copy it and paste it yourself — the PI and packing list are always shared by hand.'
-              : 'Paste each link into that company’s WhatsApp group, alongside the PI and packing list you share by hand.'}
+              ? 'Each company gets its own link. Send it from here, or copy it — the PI and packing list are always shared by hand.'
+              : 'Each company gets its own link. Copy it, or open WhatsApp with that link already in the message. The PI and packing list are shared by hand.'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -481,6 +507,12 @@ export function RecipientsPanel({
                   )}
                 </div>
                 <p className="text-ink-muted">
+                  {sendState[recipient.id]?.destinationMasked
+                    ? `Phone: ${sendState[recipient.id].destinationMasked}`
+                    : recipient.phone
+                      ? `Phone: ${recipient.phone}`
+                      : 'No WhatsApp number'}
+                  {' · '}
                   {recipient.submitted_at
                     ? `Received ${formatDate(recipient.submitted_at)} at ${timeOf(recipient.submitted_at)}`
                     : recipient.first_viewed_at

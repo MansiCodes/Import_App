@@ -51,6 +51,14 @@ function ChaForm({ cha, onDone }: { cha?: Cha; onDone: () => void }) {
         <Field label="Phone" htmlFor="cha-phone">
           <Input id="cha-phone" name="phone" defaultValue={cha?.phone ?? ''} />
         </Field>
+        <Field label="WhatsApp number" htmlFor="cha-whatsapp">
+          <Input
+            id="cha-whatsapp"
+            name="whatsapp_phone"
+            defaultValue={cha?.whatsapp_phone ?? ''}
+            placeholder="If different from phone"
+          />
+        </Field>
       </div>
 
       <Field label="Notes" htmlFor="cha-notes">
@@ -128,6 +136,14 @@ function AgentForm({
         </Field>
         <Field label="Phone" htmlFor="agent-phone">
           <Input id="agent-phone" name="phone" defaultValue={agent?.phone ?? ''} />
+        </Field>
+        <Field label="WhatsApp number" htmlFor="agent-whatsapp">
+          <Input
+            id="agent-whatsapp"
+            name="whatsapp_phone"
+            defaultValue={agent?.whatsapp_phone ?? ''}
+            placeholder="If different from phone"
+          />
         </Field>
       </div>
 
@@ -297,7 +313,7 @@ export function ChaList({ chas, agents }: { chas: Cha[]; agents: ChaAgent[] }) {
         </Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon
           const isActive = filter === stat.id

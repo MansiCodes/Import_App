@@ -71,5 +71,6 @@ describe('WhatsApp credentials', () => {
     // The panel is handed a masked number and never resolves one itself.
     expect(panel).not.toMatch(/whatsapp_phone|resolveDestination/)
     expect(panel).toMatch(/destinationMasked/)
+    expect(panel).toMatch(/waDigits/)
   })
 })

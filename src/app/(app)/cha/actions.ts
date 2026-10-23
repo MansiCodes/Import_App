@@ -21,6 +21,7 @@ const chaSchema = z.object({
   contact_person: z.string().trim().max(200).nullable(),
   email: z.union([z.string().trim().email('Enter a valid email'), z.null()]),
   phone: z.string().trim().max(50).nullable(),
+  whatsapp_phone: z.string().trim().max(50).nullable(),
   address: z.string().trim().max(500).nullable(),
   notes: z.string().trim().max(2000).nullable(),
   is_active: z.coerce.boolean(),
@@ -37,6 +38,7 @@ export async function saveCha(
     contact_person: emptyToNull(formData.get('contact_person')),
     email: emptyToNull(formData.get('email')),
     phone: emptyToNull(formData.get('phone')),
+    whatsapp_phone: emptyToNull(formData.get('whatsapp_phone')),
     address: emptyToNull(formData.get('address')),
     notes: emptyToNull(formData.get('notes')),
     is_active: formData.get('is_active') === 'on',
@@ -73,6 +75,7 @@ const agentSchema = z.object({
   contact_person: z.string().trim().max(200).nullable(),
   email: z.union([z.string().trim().email('Enter a valid email'), z.null()]),
   phone: z.string().trim().max(50).nullable(),
+  whatsapp_phone: z.string().trim().max(50).nullable(),
   modes: z.array(z.enum(['air', 'sea', 'courier', 'road'])),
   notes: z.string().trim().max(2000).nullable(),
 })
@@ -90,6 +93,7 @@ export async function saveAgent(
     contact_person: emptyToNull(formData.get('contact_person')),
     email: emptyToNull(formData.get('email')),
     phone: emptyToNull(formData.get('phone')),
+    whatsapp_phone: emptyToNull(formData.get('whatsapp_phone')),
     modes: formData.getAll('modes'),
     notes: emptyToNull(formData.get('notes')),
   })

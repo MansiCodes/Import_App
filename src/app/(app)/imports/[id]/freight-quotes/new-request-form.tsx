@@ -100,7 +100,7 @@ export function NewRequestForm({
   const [mode, setMode] = useState<'AIR' | 'SEA_LCL'>('AIR')
   const [shipmentId, setShipmentId] = useState('')
   const [selectedChas, setSelectedChas] = useState<string[]>([])
-  const [extras, setExtras] = useState<string[]>([])
+  const [extras, setExtras] = useState<Array<{ name: string; phone: string }>>([])
   const [facts, setFacts] = useState({
     origin: defaults.origin,
     destination: defaults.destination,
@@ -199,7 +199,7 @@ export function NewRequestForm({
     return filled
   }
 
-  const recipientCount = selectedChas.length + extras.filter((n) => n.trim()).length
+  const recipientCount = selectedChas.length + extras.filter((extra) => extra.name.trim()).length
 
   if (!open) {
     return (
@@ -234,10 +234,11 @@ export function NewRequestForm({
           <input key={id} type="hidden" name="cha_ids" value={id} />
         ))}
         {extras
-          .filter((name) => name.trim())
-          .map((name, index) => (
-            <input key={index} type="hidden" name="extra_names" value={name.trim()} />
-          ))}
+          .filter((extra) => extra.name.trim())
+          .flatMap((extra, index) => [
+            <input key={`name-${index}`} type="hidden" name="extra_names" value={extra.name.trim()} />,
+            <input key={`phone-${index}`} type="hidden" name="extra_phones" value={extra.phone.trim()} />,
+          ])}
 
         <section>
           <h3 className="mb-2 font-medium">1 · Mode</h3>
@@ -370,7 +371,8 @@ export function NewRequestForm({
         <section>
           <h3 className="mb-1 font-medium">3 · Request quotes from</h3>
           <p className="mb-3 text-ink-muted">
-            One private link per company. You paste each into their WhatsApp group.
+            One private link per company. Send each on WhatsApp, or copy it if sending is not
+            configured.
           </p>
 
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -397,21 +399,40 @@ export function NewRequestForm({
                     }
                     className="size-4"
                   />
-                  <span className={selected ? 'font-medium' : ''}>{cha.name}</span>
+                  <span className={selected ? 'font-medium' : ''}>
+                    {cha.name}
+                    {(cha.whatsapp_phone || cha.phone) && (
+                      <span className="ml-1 font-normal text-ink-faint">
+                        {cha.whatsapp_phone || cha.phone}
+                      </span>
+                    )}
+                  </span>
                 </label>
               )
             })}
           </div>
 
-          {extras.map((name, index) => (
-            <div key={index} className="mt-2 flex items-center gap-2">
+          {extras.map((extra, index) => (
+            <div key={index} className="mt-2 flex flex-wrap items-center gap-2">
               <Input
-                value={name}
+                value={extra.name}
                 placeholder="Company name"
                 onChange={(e) =>
-                  setExtras((prev) => prev.map((n, i) => (i === index ? e.target.value : n)))
+                  setExtras((prev) =>
+                    prev.map((row, i) => (i === index ? { ...row, name: e.target.value } : row)),
+                  )
                 }
                 className="max-w-xs"
+              />
+              <Input
+                value={extra.phone}
+                placeholder="WhatsApp number"
+                onChange={(e) =>
+                  setExtras((prev) =>
+                    prev.map((row, i) => (i === index ? { ...row, phone: e.target.value } : row)),
+                  )
+                }
+                className="max-w-[11rem]"
               />
               <Button
                 type="button"
@@ -427,7 +448,7 @@ export function NewRequestForm({
             type="button"
             variant="ghost"
             className="mt-2"
-            onClick={() => setExtras((prev) => [...prev, ''])}
+            onClick={() => setExtras((prev) => [...prev, { name: '', phone: '' }])}
           >
             + Add another company
           </Button>

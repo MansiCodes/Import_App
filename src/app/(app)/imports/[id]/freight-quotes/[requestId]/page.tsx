@@ -79,6 +79,7 @@ export default async function QuoteRequestPage({
           // Masked: enough to confirm the right number, not enough to be a
           // contact list leaked into the page source.
           destinationMasked: maskDestination(destination),
+          waDigits: destination,
           status: message?.status ?? null,
           sentAt: message?.sent_at ?? null,
           deliveredAt: message?.delivered_at ?? null,

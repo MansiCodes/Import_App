@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Sidebar } from '@/components/nav/sidebar'
 import { TopBar } from '@/components/nav/top-bar'
 import type { NotificationItem } from '@/lib/notifications'
@@ -20,6 +20,7 @@ export function AppShell({
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -30,6 +31,8 @@ export function AppShell({
     }
     setReady(true)
   }, [])
+
+  const closeMobile = useCallback(() => setMobileOpen(false), [])
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -44,18 +47,22 @@ export function AppShell({
   }
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-surface md:flex-row">
+    <div className="flex h-dvh overflow-hidden bg-surface">
       <Sidebar
         inboxCount={inboxCount}
         collapsed={ready ? collapsed : false}
+        mobileOpen={mobileOpen}
         onToggle={toggleCollapsed}
+        onCloseMobile={closeMobile}
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar
           profile={profile}
           notifications={notifications}
+          menuOpen={mobileOpen}
           onMenuToggle={toggleCollapsed}
+          onMobileMenu={() => setMobileOpen((open) => !open)}
         />
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
           {children}

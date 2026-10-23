@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import { Badge, Button, Card, CardHeader, CardTitle, Input } from '@/components/ui'
 import { STATUS_LABELS, computeLineTotal, type QuoteCharge, type QuoteSummary } from '@/lib/freight-quote'
+import { pendingVendors } from '@/lib/quote-links'
 import type { FreightChargeType, FreightQuoteRecipient } from '@/lib/types'
 import { formatDate } from '@/lib/utils'
 import { RecipientChip } from '../freight-ui'
@@ -323,6 +324,10 @@ export function ComparisonPanel({
   const [expanded, setExpanded] = useState<string | null>(null)
 
   const live = recipients.filter((r) => r.status !== 'Revoked')
+  const pending = pendingVendors(
+    live,
+    columns.map((column) => column.recipientId),
+  )
 
   /*
    * The empty state used to be a full-height panel reserving hundreds of pixels
@@ -425,6 +430,14 @@ export function ComparisonPanel({
                   </div>
                 </th>
               ))}
+              {pending.map((recipient) => (
+                <th key={recipient.id} className="min-w-40 border-l px-3 py-2 text-left">
+                  <span className="font-semibold">{recipient.recipient_name}</span>
+                  <div className="font-normal">
+                    <RecipientChip status={recipient.status} />
+                  </div>
+                </th>
+              ))}
             </tr>
           </thead>
 
@@ -435,6 +448,11 @@ export function ComparisonPanel({
                 {columns.map((column) => (
                   <td key={column.quoteId} className="border-l px-3 py-1.5">
                     {chargeCell(column, code)}
+                  </td>
+                ))}
+                {pending.map((recipient) => (
+                  <td key={recipient.id} className="border-l px-3 py-1.5 text-ink-faint">
+                    Pending
                   </td>
                 ))}
               </tr>
@@ -458,6 +476,11 @@ export function ComparisonPanel({
                   )}
                 </td>
               ))}
+              {pending.map((recipient) => (
+                <td key={recipient.id} className="border-l px-3 py-2 text-ink-faint">
+                  Pending
+                </td>
+              ))}
             </tr>
 
             <tr>
@@ -475,6 +498,11 @@ export function ComparisonPanel({
                   )}
                 </td>
               ))}
+              {pending.map((recipient) => (
+                <td key={recipient.id} className="border-l px-3 py-1.5 text-ink-faint">
+                  —
+                </td>
+              ))}
             </tr>
 
             <tr>
@@ -484,6 +512,11 @@ export function ComparisonPanel({
                   {column.transitTime ?? '—'}
                 </td>
               ))}
+              {pending.map((recipient) => (
+                <td key={recipient.id} className="border-l px-3 py-1.5 text-ink-faint">
+                  —
+                </td>
+              ))}
             </tr>
 
             <tr>
@@ -491,6 +524,11 @@ export function ComparisonPanel({
               {columns.map((column) => (
                 <td key={column.quoteId} className="border-l px-3 py-1.5">
                   {column.validityDate ? formatDate(column.validityDate) : '—'}
+                </td>
+              ))}
+              {pending.map((recipient) => (
+                <td key={recipient.id} className="border-l px-3 py-1.5 text-ink-faint">
+                  —
                 </td>
               ))}
             </tr>
@@ -514,6 +552,11 @@ export function ComparisonPanel({
                   </div>
                 </td>
               ))}
+              {pending.map((recipient) => (
+                <td key={recipient.id} className="border-l px-3 py-2 text-ink-faint">
+                  Waiting
+                </td>
+              ))}
             </tr>
           </tbody>
         </table>
@@ -521,6 +564,15 @@ export function ComparisonPanel({
 
       {/* Mobile: one card per quote, because five columns cannot fit 360px. */}
       <ul className="divide-y md:hidden">
+        {pending.map((recipient) => (
+          <li key={recipient.id} className="px-4 py-3">
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+              <span className="font-semibold">{recipient.recipient_name}</span>
+              <RecipientChip status={recipient.status} />
+            </div>
+            <p className="text-ink-faint">Pending — no quotation yet</p>
+          </li>
+        ))}
         {columns.map((column) => (
           <li key={column.quoteId} className="px-4 py-3">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
