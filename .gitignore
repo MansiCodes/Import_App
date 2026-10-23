@@ -1,0 +1,45 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# production
+dist/
+
+# environment — never commit credentials
+.env
+.env.local
+.env*.local
+.env.production
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# testing
+coverage/
+
+# editor / OS
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# temp office lock files
+~$*
+
+.vercel
+
+# Scanned archive drafts — business data, not code
+archive-scan/
+
+# Generated knowledge graph
+graphify-out/

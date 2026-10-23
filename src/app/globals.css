@@ -1,0 +1,68 @@
+@import 'tailwindcss';
+
+/*
+ * Design intent (spec §36): an operations tool, not an ERP. Dense enough that a
+ * whole import fits on one screen, quiet enough that the only colour on the page
+ * is information — severity, verification state, status. Everything else is
+ * greyscale so a red row genuinely means something.
+ */
+
+@theme {
+  --color-surface: oklch(99% 0.002 250);
+  --color-surface-raised: oklch(100% 0 0);
+  --color-surface-sunken: oklch(97% 0.003 250);
+  --color-border: oklch(91% 0.004 250);
+  --color-border-strong: oklch(84% 0.006 250);
+
+  --color-ink: oklch(24% 0.012 255);
+  --color-ink-muted: oklch(50% 0.011 255);
+  --color-ink-faint: oklch(64% 0.009 255);
+
+  --color-accent: oklch(52% 0.155 258);
+  --color-accent-hover: oklch(46% 0.16 258);
+  --color-accent-soft: oklch(96% 0.022 258);
+
+  /* Alert severities — mapped to the Action Centre buckets. */
+  --color-critical: oklch(54% 0.196 26);
+  --color-critical-soft: oklch(96% 0.028 26);
+  --color-due: oklch(58% 0.14 62);
+  --color-due-soft: oklch(96% 0.038 75);
+  --color-upcoming: oklch(56% 0.11 235);
+  --color-upcoming-soft: oklch(96% 0.024 235);
+  --color-waiting: oklch(52% 0.03 280);
+  --color-waiting-soft: oklch(96% 0.008 280);
+  --color-done: oklch(52% 0.12 155);
+  --color-done-soft: oklch(95% 0.03 155);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Amounts and identifiers line up in columns when they are tabular. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
